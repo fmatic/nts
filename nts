@@ -1,0 +1,58 @@
+#!/bin/bash
+
+FILE="$HOME/.nts.md"
+EDITOR="${EDITOR:-nano}"
+
+init_file() {
+  if [[ ! -f "$FILE" ]]; then
+    cat <<EOF > "$FILE"
+# 🧠 Notes To Self
+
+## 🔄 Työn alla
+
+## ✅ Valmiit
+EOF
+  fi
+}
+
+add_note() {
+  init_file
+  NOTE="$1"
+  TIMESTAMP="$(date '+%d.%m.%Y %H:%M')"
+  sed -i "/## 🔄 Työn alla/a - [ ] $NOTE _($TIMESTAMP)_" "$FILE"
+  echo "➕ Lisätty: $NOTE"
+}
+
+list_notes() {
+  init_file
+  awk '/## 🔄 Työn alla/{flag=1;next}/##/{flag=0}flag' "$FILE" | nl
+}
+
+mark_done() {
+  init_file
+  LINE=$(list_notes | sed -n "${1}p" | cut -f2-)
+  [[ -z "$LINE" ]] && echo "❌ Ei löytynyt" && exit 1
+
+  sed -i "/$LINE/d" "$FILE"
+  sed -i "/## ✅ Valmiit/a ${LINE/\[ \]/[x]}" "$FILE"
+  echo "✅ Merkitty valmiiksi"
+}
+
+edit_notes() {
+  init_file
+  $EDITOR "$FILE"
+}
+
+case "$1" in
+  add) shift; add_note "$*" ;;
+  list) list_notes ;;
+  done) mark_done "$2" ;;
+  edit) edit_notes ;;
+  *)
+    echo "Käyttö:"
+    echo "  nts add \"Muistettava asia\""
+    echo "  nts list"
+    echo "  nts done <numero>"
+    echo "  nts edit"
+    ;;
+esac
