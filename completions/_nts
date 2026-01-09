@@ -1,0 +1,15 @@
+#compdef nts
+
+_arguments \
+  '1:command:(add list done edit help)' \
+  '2:task number:_nts_tasks'
+
+_nts_tasks() {
+  if [[ -f "$HOME/.nts.md" ]]; then
+    awk '
+      /## 🔄 Työn alla/{flag=1;next}
+      /##/{flag=0}
+      flag && /^\- \[ \]/ {i++ ; print i}
+    ' "$HOME/.nts.md"
+  fi
+}
