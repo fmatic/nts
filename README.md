@@ -15,7 +15,7 @@ joka toimii yhtä hyvin editorissa, Gitissä, Obsidianissa tai blogissa.
 - 🧠 Kaikki Markdown-muodossa
 - 🇪🇺 Eurooppalainen päivämääräformaatti
 - 🔧 Ei riippuvuuksia
-
+- Tukee Bash ja ZSH autocompletea
 ---
 
 ## 📦 Asennus
@@ -79,6 +79,23 @@ Kuvaus: Käytettävä editori (nano, vim, code…)
 ```bash
 export EDITOR=vim
 ```
+
+## ⌨️ Shell autocomplete
+
+NTS tukee bash- ja zsh-autocompletea.
+
+### Bash
+```bash
+cp completions/nts.bash ~/.bash_completion.d/nts
+```
+
+### ZSH
+
+```bash
+cp completions/_nts ~/.zsh/completions/
+```
+
+
 
 🛣️ Roadmap
 
