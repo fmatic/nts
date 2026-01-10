@@ -1,4 +1,7 @@
 #!/bin/bash
+CONFIG="$HOME/.config/nts/config"
+[[ -f "$CONFIG" ]] && source "$CONFIG"
+[[ "$COMPLETION_ENABLED" == "0" ]] && return 0
 
 _nts_completion() {
   local cur prev commands
@@ -27,6 +30,12 @@ _nts_completion() {
       return 0
       ;;
   esac
+}
+
+_nts_tags() {
+  if [[ -f "$HOME/.nts.md" ]]; then
+    grep -o '#[a-zA-Z0-9_-]\+' "$HOME/.nts.md" | sort -u
+  fi
 }
 
 complete -F _nts_completion nts
