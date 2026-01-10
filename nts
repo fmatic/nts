@@ -2,6 +2,11 @@
 
 FILE="$HOME/.nts.md"
 EDITOR="${EDITOR:-nano}"
+CONFIG="$HOME/.config/nts/config"
+COMPLETION_ENABLED=1
+
+[[ -f "$CONFIG" ]] && source "$CONFIG"
+
 
 init_file() {
   if [[ ! -f "$FILE" ]]; then
@@ -25,8 +30,27 @@ add_note() {
 
 list_notes() {
   init_file
-  awk '/## 🔄 Työn alla/{flag=1;next}/##/{flag=0}flag' "$FILE" | nl
+  awk '
+    /## 🔄 Työn alla/ {flag=1; next}
+    /##/ {flag=0}
+    flag {
+      if (index($0, "_(") > 0 && index($0, "-") > 0) {
+        # poimi päivämäärä käsin
+        start = index($0, "_(") + 2
+        iso = substr($0, start, 10)   # YYYY-MM-DD
+        split(iso, d, "-")
+        if (length(d[1]) == 4) {
+          eu = d[3] "." d[2] "." d[1]
+          sub(iso, eu)
+        }
+      }
+      print
+    }
+  ' "$FILE" | nl
 }
+
+
+
 
 mark_done() {
   init_file
@@ -44,15 +68,50 @@ edit_notes() {
 }
 
 case "$1" in
-  add) shift; add_note "$*" ;;
-  list) list_notes ;;
-  done) mark_done "$2" ;;
-  edit) edit_notes ;;
+  add)
+    shift
+    add_note "$*"
+    ;;
+  list)
+    list_notes
+    ;;
+  done)
+    NUM="${2%%:*}"
+    mark_done "$NUM"
+    ;;
+  edit)
+    edit_notes
+    ;;
+  config)
+    mkdir -p "$(dirname "$CONFIG")"
+    case "$2" in
+      completion)
+        case "$3" in
+          on)
+            echo "COMPLETION_ENABLED=1" > "$CONFIG"
+            echo "✅ Autocomplete käytössä"
+            ;;
+          off)
+            echo "COMPLETION_ENABLED=0" > "$CONFIG"
+            echo "🚫 Autocomplete pois käytöstä"
+            ;;
+          *)
+            echo "Käyttö: nts config completion on|off"
+            ;;
+        esac
+        ;;
+      *)
+        echo "Tuntematon asetus"
+        ;;
+    esac
+    ;;
   *)
     echo "Käyttö:"
     echo "  nts add \"Muistettava asia\""
     echo "  nts list"
     echo "  nts done <numero>"
     echo "  nts edit"
+    echo "  nts config completion on|off"
     ;;
 esac
+
