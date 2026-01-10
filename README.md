@@ -143,6 +143,14 @@ nts add "Korjaa skripti #<TAB>"
 - nts today
 - JSON-export
 - systemd-timer / daily summary
+- nts list #tag → suodatus
+- nts tags → listaa tagit + laskuri
+- värikoodattu nts list
+- nts install → asentaa binäärin + completionit
+- nts doctor → tarkistaa awk/sed/completion
+- nts focus → tulostaa yhden asian kerrallaan
+- nts config muokkaus
+- nts tags --top (statistiikkaa)
 
 ⸻
 
