@@ -128,6 +128,15 @@ Asetus tallennetaan tiedostoon:
 
 ja koskee kaikkia tuettuja shellejä (bash, zsh, fish).
 
+### Tag autocomplete
+
+Kun lisäät muistiinpanoa, NTS osaa ehdottaa aiemmin käytettyjä tageja.
+
+```bash
+nts add "#<TAB>"
+nts add "Korjaa skripti #<TAB>"
+```
+
 🛣️ Roadmap
 
 - Tagit (#linux #radio #idea)
