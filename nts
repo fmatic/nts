@@ -4,6 +4,7 @@ FILE="$HOME/.nts.md"
 EDITOR="${EDITOR:-nano}"
 CONFIG="$HOME/.config/nts/config"
 COMPLETION_ENABLED=1
+TODAY="$(date '+%d.%m.%Y')"
 
 # Colors (disable if NO_COLOR is set)
 if [[ -t 1 && -z "$NO_COLOR" ]]; then
@@ -48,20 +49,44 @@ add_note() {
 
 list_notes() {
   init_file
+
+  local show_done=0
+  local filter_tag=""
+  local filter_today=0
+
+  for arg in "$@"; do
+    case "$arg" in
+      --done) show_done=1 ;;
+      --today) filter_today=1 ;;
+      \#*) filter_tag="$arg" ;;
+    esac
+  done
+
   awk -v gray="$C_GRAY" -v yellow="$C_YELLOW" -v green="$C_GREEN" \
-      -v blue="$C_BLUE" -v magenta="$C_MAGENTA" -v reset="$C_RESET" '
-    /## 🔄 Työn alla/ {flag=1; next}
-    /##/ {flag=0}
-    flag {
+      -v blue="$C_BLUE" -v magenta="$C_MAGENTA" -v reset="$C_RESET" \
+      -v show_done="$show_done" -v tag="$filter_tag" \
+      -v today="$TODAY" -v only_today="$filter_today" '
+    /## 🔄 Työn alla/ {section="todo"; next}
+    /## ✅ Valmiit/ {section="done"; next}
+    /^## / {section=""; next}
+
+    section != "" {
       line = $0
 
-      # Näytä vain oikeat tehtävät
+      # vain tehtävät
       if (line !~ /^\- \[[ x]\] /) next
 
-      # EU-päivämäärämuunnos (BusyBox-safe)
+      # done / todo -filtteri
+      if (section == "done" && !show_done) next
+      if (section == "todo" && show_done) next
+
+      # tag-filtteri
+      if (tag != "" && line !~ tag) next
+
+      # EU-päivämäärä
       if (index(line, "_(") > 0 && index(line, "-") > 0) {
         start = index(line, "_(") + 2
-        iso = substr(line, start, 10)   # YYYY-MM-DD
+        iso = substr(line, start, 10)
         split(iso, d, "-")
         if (length(d[1]) == 4) {
           eu = d[3] "." d[2] "." d[1]
@@ -69,30 +94,26 @@ list_notes() {
         }
       }
 
+      # today-filtteri
+      if (only_today && line !~ today) next
+
       i++
 
-      # Status
-      if (line ~ /^\- \[ \]/) {
-        status = yellow "[ ]" reset
-      } else if (line ~ /^\- \[x\]/) {
-        status = green "[x]" reset
-      }
+      if (line ~ /^\- \[ \]/) status = yellow "[ ]" reset
+      else status = green "[x]" reset
 
-      # Poista Markdown-status
       sub(/^\- \[[ x]\] /, "", line)
 
-      # Väritä päivämäärä
       gsub(/_\([0-9]{2}\.[0-9]{2}\.[0-9]{4} [0-9]{2}:[0-9]{2}\)_/,
            blue "&" reset, line)
 
-      # Väritä tagit
       gsub(/#[a-zA-Z0-9_-]+/, magenta "&" reset, line)
 
-      # Tulostus
       printf "%s%2d%s  %s %s\n", gray, i, reset, status, line
     }
   ' "$FILE"
 }
+
 
 
 mark_done() {
@@ -116,7 +137,8 @@ case "$1" in
     add_note "$*"
     ;;
   list)
-    list_notes
+    shift
+    list_notes "$@"
     ;;
   done)
     NUM="${2%%:*}"
@@ -148,13 +170,34 @@ case "$1" in
         ;;
     esac
     ;;
+  install)
+    echo "🔧 Installing nts..."
+
+    sudo install -m 755 "$0" /usr/local/bin/nts
+
+    if [[ -n "$BASH_VERSION" ]]; then
+      sudo mkdir -p /etc/bash_completion.d
+      sudo install -m 644 "$(dirname "$0")/completions/nts.bash" \
+        /etc/bash_completion.d/nts
+      echo "✔ Bash completion installed"
+    fi
+
+    if [[ -n "$ZSH_VERSION" ]]; then
+      mkdir -p ~/.zsh/completions
+      install -m 644 "$(dirname "$0")/completions/_nts" \
+        ~/.zsh/completions/_nts
+      echo "✔ Zsh completion installed"
+    fi
+
+    echo "✅ Done. Restart shell."
+    ;;
   *)
     echo "Käyttö:"
     echo "  nts add \"Muistettava asia\""
-    echo "  nts list"
+    echo "  nts list [#tag] [--today] [--done]"
     echo "  nts done <numero>"
     echo "  nts edit"
     echo "  nts config completion on|off"
+    echo "  nts install"
     ;;
 esac
-
