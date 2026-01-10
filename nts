@@ -5,6 +5,24 @@ EDITOR="${EDITOR:-nano}"
 CONFIG="$HOME/.config/nts/config"
 COMPLETION_ENABLED=1
 
+# Colors (disable if NO_COLOR is set)
+if [[ -t 1 && -z "$NO_COLOR" ]]; then
+  C_RESET="\033[0m"
+  C_GRAY="\033[90m"
+  C_YELLOW="\033[33m"
+  C_GREEN="\033[32m"
+  C_BLUE="\033[34m"
+  C_MAGENTA="\033[35m"
+else
+  C_RESET=""
+  C_GRAY=""
+  C_YELLOW=""
+  C_GREEN=""
+  C_BLUE=""
+  C_MAGENTA=""
+fi
+
+
 [[ -f "$CONFIG" ]] && source "$CONFIG"
 
 
@@ -30,26 +48,51 @@ add_note() {
 
 list_notes() {
   init_file
-  awk '
+  awk -v gray="$C_GRAY" -v yellow="$C_YELLOW" -v green="$C_GREEN" \
+      -v blue="$C_BLUE" -v magenta="$C_MAGENTA" -v reset="$C_RESET" '
     /## 🔄 Työn alla/ {flag=1; next}
     /##/ {flag=0}
     flag {
-      if (index($0, "_(") > 0 && index($0, "-") > 0) {
-        # poimi päivämäärä käsin
-        start = index($0, "_(") + 2
-        iso = substr($0, start, 10)   # YYYY-MM-DD
+      line = $0
+
+      # Näytä vain oikeat tehtävät
+      if (line !~ /^\- \[[ x]\] /) next
+
+      # EU-päivämäärämuunnos (BusyBox-safe)
+      if (index(line, "_(") > 0 && index(line, "-") > 0) {
+        start = index(line, "_(") + 2
+        iso = substr(line, start, 10)   # YYYY-MM-DD
         split(iso, d, "-")
         if (length(d[1]) == 4) {
           eu = d[3] "." d[2] "." d[1]
-          sub(iso, eu)
+          sub(iso, eu, line)
         }
       }
-      print
+
+      i++
+
+      # Status
+      if (line ~ /^\- \[ \]/) {
+        status = yellow "[ ]" reset
+      } else if (line ~ /^\- \[x\]/) {
+        status = green "[x]" reset
+      }
+
+      # Poista Markdown-status
+      sub(/^\- \[[ x]\] /, "", line)
+
+      # Väritä päivämäärä
+      gsub(/_\([0-9]{2}\.[0-9]{2}\.[0-9]{4} [0-9]{2}:[0-9]{2}\)_/,
+           blue "&" reset, line)
+
+      # Väritä tagit
+      gsub(/#[a-zA-Z0-9_-]+/, magenta "&" reset, line)
+
+      # Tulostus
+      printf "%s%2d%s  %s %s\n", gray, i, reset, status, line
     }
-  ' "$FILE" | nl
+  ' "$FILE"
 }
-
-
 
 
 mark_done() {
