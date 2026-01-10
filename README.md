@@ -139,7 +139,7 @@ nts add "Korjaa skripti #<TAB>"
 
 🛣️ Roadmap
 
-- Tagit (#linux #radio #idea)
+- ~~Tagit (#linux #radio #idea)~~
 - nts today
 - JSON-export
 - systemd-timer / daily summary
