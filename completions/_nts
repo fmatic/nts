@@ -1,15 +1,48 @@
 #compdef nts
 
-_arguments \
-  '1:command:(add list done edit help)' \
-  '2:task number:_nts_tasks'
+CONFIG="$HOME/.config/nts/config"
+[[ -f "$CONFIG" ]] && source "$CONFIG"
+[[ "$COMPLETION_ENABLED" == "0" ]] && return 0
+
+
+_nts_tags() {
+  [[ -f ~/.nts.md ]] || return
+  grep -o '#[a-zA-Z0-9_-]\+' ~/.nts.md | sort -u
+}
 
 _nts_tasks() {
-  if [[ -f "$HOME/.nts.md" ]]; then
-    awk '
-      /## 🔄 Työn alla/{flag=1;next}
-      /##/{flag=0}
-      flag && /^\- \[ \]/ {i++ ; print i}
-    ' "$HOME/.nts.md"
-  fi
+  [[ -f ~/.nts.md ]] || return
+  awk '
+    /## 🔄 Työn alla/{f=1;next}
+    /##/{f=0}
+    f && /^\- \[ \]/ {
+      i++
+      sub(/^- \[ \] /,"")
+      print i ":" $0
+    }
+  ' ~/.nts.md
 }
+
+_arguments -C \
+  '1:command:(add list done edit config help)' \
+  '*::arg:->args'
+
+case $state in
+  args)
+    case $words[2] in
+      add)
+        _arguments \
+          '2:tags:_nts_tags'
+        ;;
+      done)
+        _arguments \
+          '2:task:_nts_tasks'
+        ;;
+      config)
+        _arguments \
+          '2:setting:(completion)' \
+          '3:value:(on off)'
+        ;;
+    esac
+    ;;
+esac
