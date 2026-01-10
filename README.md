@@ -15,7 +15,7 @@ joka toimii yhtä hyvin editorissa, Gitissä, Obsidianissa tai blogissa.
 - 🧠 Kaikki Markdown-muodossa
 - 🇪🇺 Eurooppalainen päivämääräformaatti
 - 🔧 Ei riippuvuuksia
-- Tukee Bash ja ZSH autocompletea
+- 🔍 Tukee Bash, ZSH ja Fish autocompletea
 ---
 
 ## 📦 Asennus
@@ -82,7 +82,7 @@ export EDITOR=vim
 
 ## ⌨️ Shell autocomplete
 
-NTS tukee bash- ja zsh-autocompletea.
+NTS tukee bash-, fish- ja zsh-autocompletea.
 
 ### Bash
 ```bash
@@ -95,7 +95,38 @@ cp completions/nts.bash ~/.bash_completion.d/nts
 cp completions/_nts ~/.zsh/completions/
 ```
 
+### Fish
 
+```bash
+cp completions/nts.fish ~/.config/fish/completions/
+```
+
+## ⚙️ Configuration
+
+NTS tukee käyttäjäkohtaisia asetuksia.
+
+### Autocomplete päälle / pois
+
+Jos et halua käyttää shell-autocompletea (esim. suorituskyky- tai
+yhteensopivuussyistä), sen voi kytkeä pois:
+
+```bash
+nts config completion off
+```
+
+Kytke takaisin päälle:
+
+```bash
+nts config completion on
+```
+
+Asetus tallennetaan tiedostoon:
+
+```bash
+~/.config/nts/config
+```
+
+ja koskee kaikkia tuettuja shellejä (bash, zsh, fish).
 
 🛣️ Roadmap
 
