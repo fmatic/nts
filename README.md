@@ -171,13 +171,13 @@ sudo ./nts install
 🛣️ Roadmap
 
 - ~~Tagit (#linux #radio #idea)~~
-- nts today
+- ~~nts today~~
 - JSON-export
 - systemd-timer / daily summary
-- nts list #tag → suodatus
+- ~~nts list #tag → suodatus~~
 - nts tags → listaa tagit + laskuri
 - ~~värikoodattu nts list~~
-- nts install → asentaa binäärin + completionit
+- ~~nts install → asentaa binäärin + completionit~~
 - nts doctor → tarkistaa awk/sed/completion
 - nts focus → tulostaa yhden asian kerrallaan
 - nts config muokkaus
