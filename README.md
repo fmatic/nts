@@ -137,6 +137,37 @@ nts add "#<TAB>"
 nts add "Korjaa skripti #<TAB>"
 ```
 
+## 📋 Tehtävien listaus TAG mukaan
+
+### Filter by tag
+```bash
+nts list #radio
+```
+
+## ✅ Näytä suoritetut tehtävät
+
+```bash
+nts list --done
+```
+
+## 📋 Näytä tämän päivän tehtävät
+
+```bash
+nts list --today
+```
+
+## 🔧 Yhdistele suodattimia ja sääntöjä
+
+```bash
+nts list #backup --today
+```
+
+## 🔧 Asennus
+
+```bash
+sudo ./nts install
+```
+
 🛣️ Roadmap
 
 - ~~Tagit (#linux #radio #idea)~~
@@ -145,7 +176,7 @@ nts add "Korjaa skripti #<TAB>"
 - systemd-timer / daily summary
 - nts list #tag → suodatus
 - nts tags → listaa tagit + laskuri
-- värikoodattu nts list
+- ~~värikoodattu nts list~~
 - nts install → asentaa binäärin + completionit
 - nts doctor → tarkistaa awk/sed/completion
 - nts focus → tulostaa yhden asian kerrallaan
