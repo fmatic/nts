@@ -16,6 +16,13 @@ joka toimii yhtä hyvin editorissa, Gitissä, Obsidianissa tai blogissa.
 - 🇪🇺 Eurooppalainen päivämääräformaatti
 - 🔧 Ei riippuvuuksia
 - 🔍 Tukee Bash, ZSH ja Fish autocompletea
+- 🎨 Listaus & näkymät 
+- 📅 Aikasuodatus
+- 🏷️ Tunnisteet (TAG) ja niiden listaus
+- 📊 Statistiikkaa 
+- 🩺 Doctor
+- 🔄 Git Sync (käyttää käyttäjän omaa Git-repoa)
+
 ---
 
 ## 📦 Asennus
@@ -160,6 +167,30 @@ nts list --today
 
 ```bash
 nts list #backup --today
+```
+
+## 🏷️ nListaaa tagit ja laskurit
+
+```bash
+nts tags
+```
+
+## 📊  Nopea tilannekuva
+
+```bash
+nts stats
+```
+
+## 🩺 Ympäristön tarkistus
+
+```bash
+nts doctor
+```
+
+## 🔄 Git-pohjainen synkkaus
+
+```bash
+nts sync
 ```
 
 ## 🔧 Asennus
