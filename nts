@@ -131,6 +131,79 @@ edit_notes() {
   $EDITOR "$FILE"
 }
 
+list_tags() {
+  init_file
+  awk '
+    /## 🔄 Työn alla|## ✅ Valmiit/ {flag=1; next}
+    /^## / {flag=0}
+    flag {
+      while (match($0, /#[a-zA-Z0-9_-]+/)) {
+        tag = substr($0, RSTART, RLENGTH)
+        count[tag]++
+        $0 = substr($0, RSTART + RLENGTH)
+      }
+    }
+    END {
+      for (t in count)
+        printf "%-12s %d\n", t, count[t]
+    }
+  ' "$FILE" | sort
+}
+
+nts_stats() {
+  init_file
+
+  local total todo done tags
+  total=$(grep -E '^\- \[[ x]\]' "$FILE" | wc -l)
+  todo=$(grep -E '^\- \[ \]' "$FILE" | wc -l)
+  done=$(grep -E '^\- \[x\]' "$FILE" | wc -l)
+  tags=$(grep -o '#[a-zA-Z0-9_-]\+' "$FILE" | sort -u | wc -l)
+
+  echo "Tasks total : $total"
+  echo "Todo        : $todo"
+  echo "Done        : $done"
+  echo "Tags        : $tags"
+  echo "File        : $FILE"
+}
+
+nts_doctor() {
+  echo "NTS Doctor"
+  echo "----------"
+
+  command -v nts >/dev/null && echo "✔ nts executable found" || echo "✖ nts not in PATH"
+  [[ -f "$FILE" ]] && echo "✔ data file exists" || echo "⚠ data file missing"
+  command -v awk >/dev/null && echo "✔ awk available" || echo "✖ awk missing"
+  command -v sed >/dev/null && echo "✔ sed available" || echo "✖ sed missing"
+  command -v git >/dev/null && echo "✔ git available" || echo "⚠ git not installed"
+
+  if [[ "$COMPLETION_ENABLED" == "1" ]]; then
+    echo "✔ completion enabled"
+  else
+    echo "⚠ completion disabled"
+  fi
+}
+
+nts_sync() {
+  init_file
+  local dir
+  dir="$(dirname "$FILE")"
+
+  if [[ ! -d "$dir/.git" ]]; then
+    echo "❌ $dir ei ole git-repo"
+    return 1
+  fi
+
+  cd "$dir" || return 1
+
+  git add "$(basename "$FILE")"
+  git commit -m "Update nts notes" >/dev/null 2>&1 || true
+  git pull --rebase
+  git push
+
+  echo "✔ synced"
+}
+
+
 case "$1" in
   add)
     shift
@@ -147,6 +220,19 @@ case "$1" in
   edit)
     edit_notes
     ;;
+  tags)
+  list_tags
+  ;;
+  stats)
+  nts_stats
+  ;;
+  doctor)
+  nts_doctor
+  ;;
+ sync)
+  nts_sync
+  ;;
+
   config)
     mkdir -p "$(dirname "$CONFIG")"
     case "$2" in
